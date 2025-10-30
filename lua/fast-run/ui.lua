@@ -5,59 +5,61 @@ local keymap = require("fast-run.keymap")
 local runner = require("fast-run.runner")
 
 M.html_server_running = false
+M.server_job_id = nil
+
+local jobstart = vim.fn.jobstart
+local jobstop = vim.fn.jobstop
+local expand = vim.fn.expand
 
 function M.setup_keymap()
 	vim.keymap.set("n", "<leader>t", function()
 		vim.cmd("w")
 
 		local filetype = vim.bo.filetype
-		local fullpath = vim.fn.expand("%:p")
-		local dir = vim.fn.expand("%:p:h")
-		local filename_noext = vim.fn.expand("%:t:r")
+		
+		if filetype == "css" then
+			print(M.html_server_running 
+				and "CSS saved. Browser will auto-inject (no reload)." 
+				or "No server running. Start from an HTML file first.")
+			return
+		end
 
-		local cmd = runner.get_run_command(filetype, fullpath, dir, filename_noext)
+		local cmd = runner.get_run_command(filetype, expand("%:p"), expand("%:p:h"), expand("%:t:r"))
 
 		if not cmd then
 			print("No support file =))")
 			return
 		end
 
-		-- Xử lý đặc biệt cho HTML - chạy nền không mở terminal
 		if filetype == "html" then
 			if not M.html_server_running then
-				-- Chạy live-server ở background
-				vim.fn.jobstart(cmd, {
+				M.server_job_id = jobstart(cmd, {
 					detach = true,
 					on_exit = function()
 						M.html_server_running = false
+						M.server_job_id = nil
 					end,
 				})
 				M.html_server_running = true
-				print("Live server started at http://localhost:8080")
+				print("Browser-sync started at http://localhost:3000")
 			else
-				print("Live server running. File saved, browser will auto-reload.")
+				print("Server running. File saved, browser will auto-reload.")
 			end
 		else
-			-- Các ngôn ngữ khác 
-			vim.cmd("vertical rightbelow vsplit")
-			vim.cmd("vertical resize 50")
-			vim.cmd(cmd)
-			vim.cmd("startinsert")
+			vim.cmd("vertical rightbelow vsplit | vertical resize 50 | " .. cmd .. " | startinsert")
 			keymap.set_terminal_keymaps()
 		end
-	end, { noremap = true, silent = true, buffer = true })
+	end, { noremap = true, silent = true })
 end
 
 function M.register()
-	vim.api.nvim_create_augroup("FastRunGroup", { clear = true })
+	local group = vim.api.nvim_create_augroup("FastRunGroup", { clear = true })
 
-	for lang, _ in pairs(config.supported_languages) do
+	for lang in pairs(config.supported_languages) do
 		vim.api.nvim_create_autocmd("FileType", {
-			group = "FastRunGroup",
+			group = group,
 			pattern = lang,
-			callback = function()
-				M.setup_keymap()
-			end,
+			callback = M.setup_keymap,
 		})
 	end
 end

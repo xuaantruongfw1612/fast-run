@@ -7,3 +7,4 @@ function M.set_terminal_keymaps()
 end
 
 return M
+
