@@ -93,13 +93,44 @@ function M.get_run_command(filetype, fullpath, dir, filename_noext)
 		local filename = expand("%:t")
 		local base_cmd = 'browser-sync start --server --files "**/*.css,**/*.html,**/*.js" --no-open --startPath="/' .. filename .. '"'
 		
-		if is_windows then
-			return string.format('cd "%s" && start /B %s & timeout /t 3 & start chrome "http://localhost:3000/%s"', dir, base_cmd, filename)
-		elseif is_macos then
-			return string.format('cd "%s" && %s & sleep 3 && open -a "Google Chrome" "http://localhost:3000/%s"', dir, base_cmd, filename)
-		elseif is_linux then
-			return string.format('cd "%s" && %s & sleep 3 && google-chrome-stable --enable-features=UseOzonePlatform --ozone-platform=wayland "http://localhost:3000/%s" > /dev/null 2>&1 &', dir, base_cmd, filename)
+		local function get_browser_cmd(browser_path, url)
+			if is_windows then
+				return string.format('cd "%s" && start /B %s & timeout /t 3 & start %s "%s"', dir, base_cmd, browser_path, url)
+			elseif is_macos then
+				return string.format('cd "%s" && %s & sleep 3 && open -a "%s" "%s"', dir, base_cmd, browser_path, url)
+			elseif is_linux then
+				return string.format('cd "%s" && %s & sleep 3 && %s "%s" > /dev/null 2>&1 &', dir, base_cmd, browser_path, url)
+			end
 		end
+		
+		local function check_browser_exists(cmd)
+			if is_windows then
+				return os.execute(string.format('where %s > nul 2>&1', cmd)) == 0
+			else
+				return os.execute(string.format('which %s > /dev/null 2>&1', cmd)) == 0
+			end
+		end
+		
+		local url = "http://localhost:3000/" .. filename
+		local browser_list = {
+			{ cmd = "google-chrome-stable", args = "--enable-features=UseOzonePlatform --ozone-platform=wayland", name = "Google Chrome" },
+            { cmd = "microsoft-edge", args = "", name = "Edge" },
+            { cmd = "microsoft-edge-stable", args = "", name = "Edge" },
+			{ cmd = "chromium", args = "", name = "Chromium" },
+			{ cmd = "firefox", args = "", name = "Firefox" }
+		}
+		
+		for _, browser in ipairs(browser_list) do
+			if check_browser_exists(browser.cmd) then
+				local browser_path = browser.cmd
+				if browser.args ~= "" then
+					browser_path = browser_path .. " " .. browser.args
+				end
+				return get_browser_cmd(browser_path, url)
+			end
+		end
+		
+		return "echo 'Browser not found'"
 	end
 
 	return nil
