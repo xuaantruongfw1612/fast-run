@@ -6,10 +6,17 @@ local runner = require("fast-run.runner")
 
 M.html_server_running = false
 M.server_job_id = nil
+M.current_html_dir = nil
 
 local jobstart = vim.fn.jobstart
 local jobstop = vim.fn.jobstop
 local expand = vim.fn.expand
+
+local function kill_all_browsersync()
+	vim.fn.system("pkill -f 'browser-sync'")
+	vim.fn.system("pkill -f 'node.*browser-sync'")
+	vim.loop.sleep(300)
+end
 
 function M.setup_keymap()
 	vim.keymap.set("n", "<leader>t", function()
@@ -32,21 +39,57 @@ function M.setup_keymap()
 		end
 
 		if filetype == "html" then
-			if not M.html_server_running then
-				M.server_job_id = jobstart(cmd, {
-					detach = true,
-					on_exit = function()
-						M.html_server_running = false
-						M.server_job_id = nil
-					end,
-				})
-				M.html_server_running = true
-				print("Browser-sync started at http://localhost:3000")
+			local current_dir = expand("%:p:h")
+			
+			if M.html_server_running and M.server_job_id then
+				if M.current_html_dir ~= current_dir then
+					print("Switching directory... killing all browser-sync processes")
+					
+					jobstop(M.server_job_id)
+					kill_all_browsersync()
+					
+					M.html_server_running = false
+					M.server_job_id = nil
+					
+					vim.defer_fn(function()
+						M.server_job_id = jobstart(cmd, {
+							detach = true,
+							cwd = current_dir,
+							on_exit = function()
+								M.html_server_running = false
+								M.server_job_id = nil
+								M.current_html_dir = nil
+							end,
+						})
+						M.html_server_running = true
+						M.current_html_dir = current_dir
+						print("Browser-sync restarted at http://localhost:3000")
+					end, 1000)
+				else
+					print("Server running. File saved, browser will auto-reload.")
+				end
 			else
-				print("Server running. File saved, browser will auto-reload.")
+				kill_all_browsersync()
+				
+				vim.defer_fn(function()
+					M.server_job_id = jobstart(cmd, {
+						detach = true,
+						cwd = current_dir,
+						on_exit = function()
+							M.html_server_running = false
+							M.server_job_id = nil
+							M.current_html_dir = nil
+						end,
+					})
+					M.html_server_running = true
+					M.current_html_dir = current_dir
+					print("Browser-sync started at http://localhost:3000")
+				end, 500)
 			end
 		else
-			vim.cmd("vertical rightbelow vsplit | vertical resize 50 | " .. cmd .. " | startinsert")
+			vim.cmd("vertical rightbelow vsplit | vertical resize 50")
+			vim.cmd(cmd)
+			vim.cmd("startinsert")
 			keymap.set_terminal_keymaps()
 		end
 	end, { noremap = true, silent = true })

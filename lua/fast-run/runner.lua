@@ -95,11 +95,11 @@ function M.get_run_command(filetype, fullpath, dir, filename_noext)
 		
 		local function get_browser_cmd(browser_path, url)
 			if is_windows then
-				return string.format('cd "%s" && start /B %s & timeout /t 3 & start %s "%s"', dir, base_cmd, browser_path, url)
+				return string.format('start /B %s & timeout /t 3 & start %s "%s"', base_cmd, browser_path, url)
 			elseif is_macos then
-				return string.format('cd "%s" && %s & sleep 3 && open -a "%s" "%s"', dir, base_cmd, browser_path, url)
+				return string.format('%s & sleep 3 && open -a "%s" "%s"', base_cmd, browser_path, url)
 			elseif is_linux then
-				return string.format('cd "%s" && %s & sleep 3 && %s "%s" > /dev/null 2>&1 &', dir, base_cmd, browser_path, url)
+				return string.format('%s & sleep 3 && %s "%s" &', base_cmd, browser_path, url)
 			end
 		end
 		
@@ -114,8 +114,8 @@ function M.get_run_command(filetype, fullpath, dir, filename_noext)
 		local url = "http://localhost:3000/" .. filename
 		local browser_list = {
 			{ cmd = "google-chrome-stable", args = "--enable-features=UseOzonePlatform --ozone-platform=wayland", name = "Google Chrome" },
-            { cmd = "microsoft-edge", args = "", name = "Edge" },
-            { cmd = "microsoft-edge-stable", args = "", name = "Edge" },
+			{ cmd = "microsoft-edge", args = "", name = "Edge" },
+			{ cmd = "microsoft-edge-stable", args = "", name = "Edge" },
 			{ cmd = "chromium", args = "", name = "Chromium" },
 			{ cmd = "firefox", args = "", name = "Firefox" }
 		}
