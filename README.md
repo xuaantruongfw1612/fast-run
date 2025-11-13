@@ -4,7 +4,7 @@
 
 ## Features
 
-- **Support for multiple programming languages:** Includes C, C++, Python, Java, JavaScript (Node.js), Html, Css ...
+- **Support for multiple programming languages:** Includes C, C++, Python, Java, JavaScript (Node.js), Html, CSS ...
 - **Separate terminal window:** Opens a new terminal window in Neovim to run the program without interrupting your workflow.
 - **Easy-to-use shortcuts:** Use the `<leader>t` shortcut to compile and run the program in the terminal.
 - **Flexible configuration:** You can easily configure the plugin to only support the languages you want.
