@@ -1,11 +1,11 @@
 local M = {}
 
-local config = require("fast-run.config")
-
 function M.setup(opts)
+	local config = require("fast-run.config")
 	config.setup(opts)
-	require("fast-run.ui").register()
+	
+	local ui = require("fast-run.ui")
+	ui.register()
 end
 
 return M
-

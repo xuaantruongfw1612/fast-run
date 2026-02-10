@@ -1,94 +1,107 @@
-# Fast-Run Plugin for Neovim
+# Fast-Run
 
-**fast-run** is a powerful Neovim plugin that allows you to compile and run programs directly from the editor without leaving Neovim. This plugin supports many popular programming languages such as C, C++, Python, Java, JavaScript, and more.
+A powerful Neovim plugin for compiling and running code directly in the editor. Supports 30+ programming languages with smart project detection.
 
-## Features
+## ✨ Features
 
-- **Support for multiple programming languages:** Includes C, C++, Python, Java, JavaScript (Node.js), Html, CSS ...
-- **Separate terminal window:** Opens a new terminal window in Neovim to run the program without interrupting your workflow.
-- **Easy-to-use shortcuts:** Use the `<leader>t` shortcut to compile and run the program in the terminal.
-- **Flexible configuration:** You can easily configure the plugin to only support the languages you want.
+- 🚀 **30+ Languages**: C, C++, Python, Java, Rust, Go, JavaScript, TypeScript, and more
+- 🎯 **Smart Detection**: Auto-detects project structures (Cargo.toml, go.mod, src/)
+- 🖥️ **Cross-Platform**: Works on Windows, Linux, and macOS
+- 🌐 **Live Server**: Built-in browser-sync for HTML/CSS development
+- ⚡ **Fast Execution**: Compile and run with a single keypress
+- 🎨 **Terminal Management**: Smart terminal reuse and navigation
 
-## Installation
+## 📦 Installation
 
-### Installation via Lazy.nvim (or Packer.nvim)
-
+### Using [lazy.nvim](https://github.com/folke/lazy.nvim)
 ```lua
-    return {
-        "xuaantruongfw1612/fast-run",
-        config = function()
-            require("fast-run").setup({
-                enable = { "c", "cpp", "python", "java", "javascript", "html", "css" },  -- Configure the languages you want to support
-            })
-        end,
+{
+    "xuaantruongfw1612/fast-run",
+    config = function()
+        require("fast-run").setup({
+            enable = { "c", "cpp", "python", "java", "rust", "go" },
+        })
+    end,
+}
+```
+
+### Using [packer.nvim](https://github.com/wbthomason/packer.nvim)
+```lua
+use {
+    "xuaantruongfw1612/fast-run",
+    config = function()
+        require("fast-run").setup({
+            enable = { "c", "cpp", "python", "java", "rust", "go" },
+        })
+    end
+}
+```
+
+## ⌨️ Default Keymaps
+
+| Keymap | Action |
+|--------|--------|
+| `<leader>t` | Run current file |
+| `<leader>ts` | Stop HTML server |
+| `<leader>ti` | Show server info |
+| `<leader>tj` | Create Java project |
+| `<leader>tr` | Create Rust project |
+| `<leader>tc` | Clear terminal |
+| `<leader>tt` | Toggle terminal mode |
+
+## 🎯 Quick Start
+
+1. Open any supported file (e.g., `main.py`)
+2. Press `<leader>t` to run
+3. View output in the terminal window
+4. Press `Enter` or `q` to close terminal
+
+## 🛠️ Custom Configuration
+```lua
+require("fast-run").setup({
+    enable = { "c", "cpp", "python", "java", "rust" },
+    keymaps = {
+        run_file = "<F5>",
+        stop_server = "<F6>",
+        -- ... customize other keymaps
     }
+})
 ```
 
-# Manual Installation
+## 📚 Supported Languages
 
-1. Clone the plugin into the `~/.config/nvim/lua/fast-run` directory.
+**Compiled**: C, C++, Rust, Go, Java, Kotlin, Swift, Zig, Nim, C#
 
-    ```bash
-    git clone https://github.com/xuaantruongfw1612/fast-run.git 
-    ```
+**Scripting**: Python, JavaScript, TypeScript, Ruby, PHP, Lua, Perl, Shell
 
-2. In your `init.lua`, call the following configuration:
+**Functional**: Haskell, Elixir, Clojure, OCaml, F#, Racket, Scala
 
-    ```lua
-    require("fast-run").setup({
-        enable = { "c", "cpp", "python", "java", "javascript", "html", "css" },  -- Modify the list of languages if needed
-    })
-    ```
+**Data Science**: R, Julia
 
-## Configuration
+**Mobile**: Dart
 
-The plugin allows you to configure the languages you want to support via the `setup()` function.
+**Web**: HTML (with live server), CSS
 
-### Example Configuration:
+For detailed documentation, see [DOCUMENTATION.md](./DOCUMENTATION.md)
 
-```lua
-    require("fast-run").setup({
-        enable = { "c", "cpp", "python", "java", "javascript", "html", "css" },  -- Languages you want to support
-    })
-```
+## 📋 Requirements
 
-You can easily add or remove languages by modifying the `enable` array.
+- Neovim 0.8+
+- Appropriate compilers/interpreters for your languages
+- `browser-sync` for HTML development (optional)
 
-## Keybindings
+## 🤝 Contributing
 
-- `<leader>t`: Save the current file and run the program in a new terminal window.
-- Press Enter in the terminal: Exit the terminal window after the program finishes running.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-## Supported Languages
+## 📄 License
 
-The plugin currently supports the following programming languages:
+MIT License - see [LICENSE](./LICENSE) for details
 
-- **C**: Compile and run with `gcc`.
-- **C++**: Compile and run with `g++`.
-- **Python**: Run the program with `python3`.
-- **Java**: Compile and run with `javac` and `java`.
-- **JavaScript (Node.js)**: Run the program with `node`.
-- **HTML, CSS**: `sudo npm install -g browser-sync`
+## 👤 Author
 
-## Adding New Language Support
+Created by [xuaantruongfw1612](https://github.com/xuaantruongfw1612)
 
-You can easily add support for other languages by modifying the configuration in `runner.lua` and adding the necessary compile/run commands for the language you want to support.
+## ⭐ Support
 
-## Contributing
-
-If you would like to contribute to this plugin, you can create a pull request or open an issue to discuss new features.
-
-## Note
-
-To ensure the plugin works properly, you need to have the appropriate compilers/interpreters installed on your system:
-
-- `gcc` for C
-- `g++` for C++
-- `python3` for Python
-- `javac` and `java` for Java
-- `node` for JavaScript
-- `html` and `css`
-
-## Usage Example
-
-After installing the plugin, you can open any source file (e.g., a C or Python file), and use the `<leader>t` shortcut to compile and run the program directly in Neovim.
+If you find this plugin helpful, please give it a star on GitHub!
