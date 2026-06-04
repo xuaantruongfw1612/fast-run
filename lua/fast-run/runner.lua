@@ -35,14 +35,14 @@ function M.get_run_command(filetype, fullpath, dir, filename_noext)
 		local py = is_windows and "python" or "python3"
 		return string.format('term %s "%s"', py, fullpath)
 
-	-- Rust (Ưu tiên Cargo project, sau đó mới file lẻ)
+	-- Rust (Prioritize Cargo project, then single file)
 	elseif filetype == "rust" then
 		local cargo_toml_path = findfile("Cargo.toml", ".;")
 		if cargo_toml_path ~= "" then
 			local cargo_dir = fnamemodify(cargo_toml_path, ":h")
 			return "term cd " .. shellescape(cargo_dir) .. " && cargo run"
 		else
-			-- File Rust đơn lẻ
+			-- Single Rust file
 			if is_windows then
 				return string.format('term rustc "%s" -o "%s" && "%s"', fullpath, output_path, output_path)
 			else
@@ -50,7 +50,7 @@ function M.get_run_command(filetype, fullpath, dir, filename_noext)
 			end
 		end
 
-	-- Java (Ưu tiên src/, sau đó file có package, cuối cùng file lẻ)
+	-- Java (Prioritize src/, then file with package, finally single file)
 	elseif filetype == "java" then
 		local lines = vim.api.nvim_buf_get_lines(0, 0, 10, false)
 		local pkg = ""
@@ -66,7 +66,7 @@ function M.get_run_command(filetype, fullpath, dir, filename_noext)
 		local classname = pkg ~= "" and (pkg .. "." .. file) or file
 		local src_path = finddir("src", ".;")
 		
-		-- Trường hợp 1: Có thư mục src (Java project structure)
+		-- Case 1: src directory exists (Java project structure)
 		if src_path ~= "" then
 			local src_abs = fnamemodify(src_path, ":p")
 			local project_root = fnamemodify(src_abs, ":h")
@@ -84,11 +84,11 @@ function M.get_run_command(filetype, fullpath, dir, filename_noext)
 				)
 			end
 		
-		-- Trường hợp 2: File Java có package (không có src/)
+		-- Case 2: Java file has a package (but not inside src/)
 		elseif pkg ~= "" then
 			vim.notify("Warning: File có package nhưng không nằm trong src/. Khuyến nghị tạo cấu trúc project (sử dụng <leader>tj).", vim.log.levels.WARN)
 			
-			-- Tạo thư mục tạm để compile
+			-- Create temporary directory for compilation
 			local temp_bin = dir .. "/bin"
 			
 			if is_windows then
@@ -103,7 +103,7 @@ function M.get_run_command(filetype, fullpath, dir, filename_noext)
 				)
 			end
 		
-		-- Trường hợp 3: File Java đơn giản không có package
+		-- Case 3: Simple Java file without package
 		else
 			if is_windows then
 				return string.format(
@@ -119,21 +119,21 @@ function M.get_run_command(filetype, fullpath, dir, filename_noext)
 		end
 
 	-- JavaScript
-	elseif filetype == "javascript" or filetype == "js" then
+	elseif filetype == "javascript" then
 		return string.format('term node "%s"', fullpath)
 
 	-- TypeScript
-	elseif filetype == "typescript" or filetype == "ts" then
+	elseif filetype == "typescript" then
 		return string.format('term ts-node "%s"', fullpath)
 
-	-- Go (Ưu tiên go.mod, sau đó file lẻ)
+	-- Go (Prioritize go.mod, then single file)
 	elseif filetype == "go" then
 		local go_mod_path = findfile("go.mod", ".;")
 		if go_mod_path ~= "" then
 			local go_dir = fnamemodify(go_mod_path, ":h")
 			return "term cd " .. shellescape(go_dir) .. " && go run ."
 		else
-			-- File Go đơn lẻ
+			-- Single Go file
 			return string.format('term go run "%s"', fullpath)
 		end
 
@@ -198,14 +198,14 @@ function M.get_run_command(filetype, fullpath, dir, filename_noext)
 	elseif filetype == "fsharp" then
 		return string.format('term dotnet fsi "%s"', fullpath)
 
-	-- C# (Ưu tiên .csproj, sau đó dotnet script)
+	-- C# (Prioritize .csproj, then dotnet script)
 	elseif filetype == "cs" then
 		local csproj = findfile("*.csproj", ".;")
 		if csproj ~= "" then
 			local proj_dir = fnamemodify(csproj, ":h")
 			return "term cd " .. shellescape(proj_dir) .. " && dotnet run"
 		else
-			-- File C# đơn lẻ
+			-- Single C# file
 			return string.format('term dotnet script "%s"', fullpath)
 		end
 
